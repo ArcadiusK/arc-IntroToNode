@@ -2,7 +2,9 @@ var express = require('express');
 var fs = require('fs');
 var logger = require('morgan');
 var async = require('async');
- 
+ var ejs = require('ejs'); 
+ var http = require('http');
+
 // take a list of files from the command line
 // now we can run our app like:
 // node app.js file1.js file2.js file3.js
@@ -13,11 +15,21 @@ console.log(files);
 // create the express app
 var app = express();
  
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
+
 // all environments
 app.use(logger('dev'));
  
-// listen on port 1234
-app.listen(1234);
+// // listen on port 1234
+// app.listen(1234);
+
+server.listen(1234);
+
+
+// after initializing app
+app.set('view engine', 'ejs');
+
  
 // // when someone comes to http://localhost:1234/, run the callback
 // // function listed here and send down the data
@@ -47,29 +59,41 @@ app.listen(1234);
 // });
 
 
+// fs.watch('.', {}, function(event,filename){
+// console.log('file',filename,'has changed')
+// io.sockets.emit("filechanged");
+// //io.sockets.emit("filechanged", { filename: filename, filetext: data.toString() });
+
+// });
 
 app.get("/", function(request, response) {
+    var mapFilesToFileObjects = function(fileName, doneCallback) {
+        fs.readFile(fileName, function(err, fileData){
+              doneCallback(null,{ id: fileName.replace(/[^0-9]/ig, ""),
+              data: fileData.toString(),
+              filename: fileName
+          })
+      });
+    };
 
-	//OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS
-	var mapFilesToFileObjects = function(fileName, doneCallback) {
-    // insert the file-reading code and call the callback correctly here
 
-    //var fileContents = "";
-    //var readFileCount = 0;
-    //files.forEach(function(fileName){
-    	
-    //})
-
-fs.readFile(fileName, function(err, fileData){
-    		     doneCallback(null,fileData)
-    		});
-  };
+    async.mapSeries(files, mapFilesToFileObjects, function(err, results) {
+    //response.send('<pre>' + results.join("\n\n") + '</pre>');
    
 
-async.mapSeries(files, mapFilesToFileObjects, function(err, results) {
-	response.send('<pre>' + results.join("\n\n") + '</pre>');
+
+
+    response.render('filelist', { files: results})
+    });
 });
-//OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS
+
+
+fs.watch(".", {}, function(event, filename) {
+    console.log('file',filename,'has changed')
+    io.sockets.emit("filechanged", {});
+});
+
+//above OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS OURS
 
 	// var x; 
 
@@ -94,26 +118,6 @@ async.mapSeries(files, mapFilesToFileObjects, function(err, results) {
 
 // 	async.mapSeries(files, mapOneFileToOneObject, finishMapAllFiles);
 // // GOOD CODE GOOD CODE GOOD CODE GOOD CODE GOOD CODE GOOD CODE GOOD CODE GOOD CODE GOOD CODE GOOD CODE 
-	
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -155,4 +159,3 @@ async.mapSeries(files, mapFilesToFileObjects, function(err, results) {
 //   // display an update was made, then console.log the new updated file!
   
 // });
-
