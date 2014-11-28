@@ -1,3 +1,6 @@
+//run typying into the console the following
+//node app.js file1.txt file2.txt file3.txt
+
 var express = require('express');
 var fs = require('fs');
 var logger = require('morgan');

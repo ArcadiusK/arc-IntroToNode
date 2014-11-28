@@ -49,10 +49,10 @@ $(document).ready(function() {
   socket.on('filechanged', function (fileobj) { 
     console.log(fileobj);
     //alert('Refreshing... check the console...');
-    // window.location.reload() is a simple way to refresh the page
-    setTimeout(function() {
-      window.location.reload();
-    }, 5000)
+     window.location.reload() //is a simple way to refresh the page
+    // setTimeout(function() {
+    //   window.location.reload();
+    // }, 5000)
   });
 </script>
 </html>
